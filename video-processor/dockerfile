@@ -1,0 +1,69 @@
+# # FROM public.ecr.aws/lambda/java:17
+
+# # # Install FFmpeg using Amazon Linux Extras
+# # RUN yum update -y && \
+# #     amazon-linux-extras install -y epel && \
+# #     yum install -y ffmpeg && \
+# #     yum clean all && \
+# #     rm -rf /var/cache/yum
+
+# # # Create necessary directories
+# # RUN mkdir -p /var/task/lib
+
+# # # Copy function code and dependencies
+# # COPY target/video-processor-0.0.1-SNAPSHOT.jar /var/task/lib/
+# # COPY target/dependency/* /var/task/lib/
+
+# # # Set the working directory
+# # WORKDIR /var/task
+
+# # # Set the handler
+# # CMD ["com.cloud.videoprocessor.VideoProcessorHandler::handleRequest"]
+
+# FROM public.ecr.aws/lambda/java:17
+
+# # Copy the local FFmpeg binary to the container
+# COPY ffmpeg /usr/local/bin/ffmpeg
+
+# # Make sure the FFmpeg binary is executable
+# RUN chmod +x /usr/local/bin/ffmpeg
+
+# # Create necessary directories
+# RUN mkdir -p /var/task/lib
+
+# # Copy function code and dependencies
+# COPY target/video-processor-0.0.1-SNAPSHOT.jar /var/task/video-processor.jar
+
+# # Set the working directory
+# WORKDIR /var/task
+
+# # Add FFmpeg to PATH
+# ENV PATH="/usr/local/bin:${PATH}"
+
+# # # Set the handler
+# # CMD ["com.cloud.videoprocessor.VideoProcessorHandler::handleRequest"]
+
+# # Set the handler
+# CMD ["com.cse546.project3.video_processor.VideoProcessorHandler::handleRequest"]
+FROM public.ecr.aws/lambda/java:17
+
+# Copy the local FFmpeg binary to the container
+COPY ffmpeg /usr/local/bin/ffmpeg
+
+# Make sure the FFmpeg binary is executable
+RUN chmod +x /usr/local/bin/ffmpeg
+
+# Create necessary directories
+RUN mkdir -p /var/task/lib
+
+# Copy function code and dependencies
+COPY target/video-processor-0.0.1-SNAPSHOT.jar ${LAMBDA_TASK_ROOT}/lib/
+
+# Set the working directory
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+# Add FFmpeg to PATH
+ENV PATH="/usr/local/bin:${PATH}"
+
+# Set the handler
+CMD ["com.cse546.project3.video_processor.VideoProcessorHandler::handleRequest"]
