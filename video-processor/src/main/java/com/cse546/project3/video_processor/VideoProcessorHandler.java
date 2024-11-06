@@ -37,6 +37,7 @@ public class VideoProcessorHandler implements RequestHandler<S3Event, String> {
 
 	@Override
 	public String handleRequest(S3Event s3Event, Context context) {
+		System.setProperty("aws.lambda.burst.concurrency", "10");
 		try {
 			// Get the S3 bucket and key
 			String sourceBucket = s3Event.getRecords().get(0).getS3().getBucket().getName();
@@ -101,16 +102,25 @@ public class VideoProcessorHandler implements RequestHandler<S3Event, String> {
 	}
 
 	private void processVideo(String inputPath, String outputDir) throws IOException, InterruptedException {
+		// String[] command = {
+		// "ffmpeg",
+		// "-ss", "0",
+		// "-r", "1",
+		// "-i", inputPath,
+		// "-vf", "fps=1/10",
+		// "-start_number", "0",
+		// "-vframes", "10",
+		// outputDir + "output-%02d.jpg",
+		// "-y"
+		// };
+
 		String[] command = {
 				"ffmpeg",
-				"-ss", "0",
-				"-r", "1",
-				"-i", inputPath,
-				"-vf", "fps=1/10",
-				"-start_number", "0",
-				"-vframes", "10",
-				outputDir + "output-%02d.jpg",
-				"-y"
+				"-i", inputPath, // Input file path
+				"-r", "10", // Set frame rate to 10 fps to capture 10 frames in 1 second
+				"-vframes", "10", // Output exactly 10 frames
+				outputDir + "output-%02d.jpg", // Output pattern
+				"-y" // Overwrite output files if they exist
 		};
 
 		ProcessBuilder processBuilder = new ProcessBuilder(command);
